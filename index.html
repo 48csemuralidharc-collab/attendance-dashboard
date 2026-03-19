@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Attendance Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+      text-align: center;
+    }
+
+    h2 {
+      background: #4CAF50;
+      color: white;
+      padding: 15px;
+      margin: 0;
+    }
+
+    .container {
+      padding: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background: #4CAF50;
+      color: white;
+      position: sticky;
+      top: 0;
+    }
+
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+
+    .card {
+      display: none;
+    }
+
+    /* Mobile view */
+    @media (max-width: 600px) {
+      table {
+        display: none;
+      }
+
+      .card {
+        display: block;
+        background: white;
+        margin: 10px;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        text-align: left;
+      }
+
+      .card strong {
+        display: block;
+        color: #333;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>📡 Live Attendance Dashboard</h2>
+
+<div class="container">
+  <table id="dataTable"></table>
+  <div id="cardView"></div>
+</div>
+
+<script>
+const apiURL = "https://sheetdb.io/api/v1/ohlt6ytk3xuzu";
+
+function loadData() {
+  fetch(apiURL)
+    .then(res => res.json())
+    .then(data => {
+
+      // TABLE VIEW
+      let table = document.getElementById("dataTable");
+      table.innerHTML = `
+        <tr>
+          <th>Name</th>
+          <th>UID</th>
+          <th>Date</th>
+          <th>Time</th>
+        </tr>`;
+
+      // CARD VIEW
+      let cards = document.getElementById("cardView");
+      cards.innerHTML = "";
+
+      data.reverse().forEach(row => {
+
+        table.innerHTML += `
+          <tr>
+            <td>${row.Name}</td>
+            <td>${row.UID}</td>
+            <td>${row.Date}</td>
+            <td>${row.Time}</td>
+          </tr>`;
+
+        cards.innerHTML += `
+          <div class="card">
+            <strong>Name:</strong> ${row.Name}
+            <strong>UID:</strong> ${row.UID}
+            <strong>Date:</strong> ${row.Date}
+            <strong>Time:</strong> ${row.Time}
+          </div>`;
+      });
+
+    });
+}
+
+// Auto refresh every 3 seconds
+setInterval(loadData, 3000);
+loadData();
+</script>
+
+</body>
+</html>
