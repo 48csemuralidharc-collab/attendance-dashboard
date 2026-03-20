@@ -1,137 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Attendance Dashboard</title>
+  <title>RFID Attendance Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    body {
-      font-family: Arial;
-      margin: 0;
-      padding: 0;
-      background: #f5f5f5;
-      text-align: center;
-    }
-
-    h2 {
-      background: #4CAF50;
+    body { font-family: Arial; margin: 0; background: #f4f6f9; }
+    header {
+      background: #2ecc71;
       color: white;
+      text-align: center;
       padding: 15px;
-      margin: 0;
+      font-size: 22px;
     }
-
-    .container {
-      padding: 10px;
-    }
-
     table {
-      width: 100%;
+      width: 95%;
+      margin: 20px auto;
       border-collapse: collapse;
       background: white;
-      margin-top: 10px;
-      font-size: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-    }
-
-    th {
-      background: #4CAF50;
-      color: white;
-      position: sticky;
-      top: 0;
-    }
-
-    tr:nth-child(even) {
-      background: #f9f9f9;
-    }
-
-    .card {
-      display: none;
-    }
-
-    /* Mobile view */
-    @media (max-width: 600px) {
-      table {
-        display: none;
-      }
-
-      .card {
-        display: block;
-        background: white;
-        margin: 10px;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        text-align: left;
-      }
-
-      .card strong {
-        display: block;
-        color: #333;
-      }
-    }
+    th { background: #27ae60; color: white; padding: 12px; }
+    td { padding: 10px; text-align: center; border-bottom: 1px solid #ddd; }
+    tr:hover { background: #f1f1f1; }
+    .status { text-align: center; margin-top: 10px; font-weight: bold; }
   </style>
 </head>
 
 <body>
 
-<h2>📡 Live Attendance Dashboard</h2>
+<header>📡 Live Attendance Dashboard</header>
+<div class="status">Loading...</div>
 
-<div class="container">
-  <table id="dataTable"></table>
-  <div id="cardView"></div>
-</div>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>UID</th>
+      <th>Date</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody id="data"></tbody>
+</table>
 
 <script>
-const apiURL = "https://sheetdb.io/api/v1/ohlt6ytk3xuzu";
 
-function loadData() {
-  fetch(apiURL)
-    .then(res => res.json())
-    .then(data => {
+const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKt0IF4MtdfPMeasJeQWhnmwHMlKXsQWcnh_2nfZo5AmJVwX4yO_3bfiXbH7pQjv5qXtaNZWTW_fgK/pub?output=csv";
 
-      // TABLE VIEW
-      let table = document.getElementById("dataTable");
-      table.innerHTML = `
-        <tr>
-          <th>Name</th>
-          <th>UID</th>
-          <th>Date</th>
-          <th>Time</th>
-        </tr>`;
+async function loadData() {
+  try {
+    const res = await fetch(url);
+    const text = await res.text();
 
-      // CARD VIEW
-      let cards = document.getElementById("cardView");
-      cards.innerHTML = "";
+    console.log(text); // 👈 DEBUG
 
-      data.reverse().forEach(row => {
+    const rows = text.trim().split("\n");
+    const table = document.getElementById("data");
+    table.innerHTML = "";
 
+    rows.slice(1).forEach(row => {
+      const cols = row.split(",");
+
+      if (cols.length >= 4) {
         table.innerHTML += `
           <tr>
-            <td>${row.Name}</td>
-            <td>${row.UID}</td>
-            <td>${row.Date}</td>
-            <td>${row.Time}</td>
+            <td>${cols[0]}</td>
+            <td>${cols[1]}</td>
+            <td>${cols[2]}</td>
+            <td>${cols[3]}</td>
           </tr>`;
-
-        cards.innerHTML += `
-          <div class="card">
-            <strong>Name:</strong> ${row.Name}
-            <strong>UID:</strong> ${row.UID}
-            <strong>Date:</strong> ${row.Date}
-            <strong>Time:</strong> ${row.Time}
-          </div>`;
-      });
-
+      }
     });
+
+    document.querySelector(".status").innerText = "✅ Live";
+
+  } catch (err) {
+    console.error(err);
+    document.querySelector(".status").innerText = "❌ Error loading data";
+  }
 }
 
-// Auto refresh every 3 seconds
-setInterval(loadData, 3000);
 loadData();
+setInterval(loadData, 5000);
+
 </script>
 
 </body>
